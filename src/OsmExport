@@ -71,5 +71,4 @@ public class OsmExport {
         }
         System.out.println(lat+","+lon+","+type+","+ref+","+diameter);
     }
-
 }
