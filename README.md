@@ -1,8 +1,7 @@
-# osm_hydrants
-Extract fire hydrants from open street map export
+# Open Street Map Fire Hydrant Exporter
+Extract fire hydrants from open street map data
 
 ## Usage:
-
 
 ### Get OSM-Export
 
