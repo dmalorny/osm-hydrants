@@ -1,0 +1,75 @@
+#!/usr/bin/java --source 17
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+import java.io.File;
+import java.io.IOException;
+
+public class OsmExport {
+    public static void main(String[] args) throws XPathExpressionException {
+        if (args.length != 1) {
+            System.out.println("No filename given.");
+            return;
+        }
+
+        processFile(new File(args[0]));
+    }
+
+    static void processFile(File xmlFile) throws XPathExpressionException {
+        System.out.println("lat,lon,type,ref,diameter");
+
+        try {
+            Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(xmlFile);
+
+            XPath xPath = XPathFactory.newInstance().newXPath();
+            NodeList nodes = (NodeList) xPath.evaluate("//osm/node[tag[@v='fire_hydrant']]", doc, XPathConstants.NODESET);
+
+            for (var i = 0; i< nodes.getLength(); i++) {
+                var node = nodes.item(i);
+                processNode(node);
+            }
+        } catch (SAXException | IOException | ParserConfigurationException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    static void processNode(Node node) throws XPathExpressionException {
+        var lat = node.getAttributes().getNamedItem("lat").getNodeValue();
+        var lon = node.getAttributes().getNamedItem("lon").getNodeValue();
+        var user = node.getAttributes().getNamedItem("user").getNodeValue();
+        var ref = "";
+        var diameter = "";
+        var type = "";
+
+        XPath xPath = XPathFactory.newInstance().newXPath();
+        NodeList tags = (NodeList) xPath.evaluate("tag", node, XPathConstants.NODESET);
+
+        for (var i = 0; i< tags.getLength(); i++) {
+            var tag = tags.item(i);
+            var key = tag.getAttributes().getNamedItem("k").getNodeValue();
+            var value = tag.getAttributes().getNamedItem("v").getNodeValue();
+
+            if (key.equals("ref")) {
+                ref = value;
+            }
+            if (key.equals("fire_hydrant:diameter")) {
+                diameter = value;
+            }
+            if (key.equals("fire_hydrant:type")) {
+                type = value;
+            }
+
+        }
+        System.out.println(lat+","+lon+","+type+","+ref+","+diameter);
+    }
+
+}
